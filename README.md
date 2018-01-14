@@ -1,2 +1,1 @@
-# vae_gan
-vae and gan
+# vae and gan
