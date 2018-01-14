@@ -43,8 +43,7 @@ dataset = dset.ImageFolder(root=data_root,
                                transform=transforms.Compose([
                                    transforms.Resize(img_size),
                                    transforms.CenterCrop(img_size),
-                                   transforms.ToTensor(),
-                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                                   transforms.ToTensor()
                                ]))
 
 loader = torch.utils.data.DataLoader(dataset, batch_size=bsize,
@@ -85,9 +84,9 @@ for epoch in range(25):
         # ##########################
         # # Visualization
         # ##########################
-        images = make_grid((output.data[:8]+1)/2)
+        images = make_grid(output.data[:8])
         writer.add_image('output', images, i)
-        images = make_grid((input[:8]+1)/2)
+        images = make_grid(input[:8])
         writer.add_image('images', images, i)
         writer.add_scalar('error', loss.data[0], i)
         print 'epoch %d step %d, err_d=%.4f' %(epoch, i, loss.data[0])

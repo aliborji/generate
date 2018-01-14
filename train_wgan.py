@@ -55,8 +55,8 @@ input = input.cuda()
 noise = noise.cuda()
 
 # setup optimizer
-optimizerD = optim.Adam(net_d.parameters(), lr=0.0002, betas=(0.5, 0.999))
-optimizerG = optim.Adam(net_g.parameters(), lr=0.0002, betas=(0.5, 0.999))
+optimizerD = optim.RMSprop(net_d.parameters(), lr=0.00005)  # 0.00005
+optimizerG = optim.RMSprop(net_g.parameters(), lr=0.00005)
 
 # train
 ig = 0
