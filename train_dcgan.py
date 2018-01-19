@@ -32,8 +32,11 @@ l = 7
 
 net_g = Net_G(nz, ngf, nc, l)
 net_g.cuda()
+net_g.load_state_dict(torch.load('/home/zeng/data/models/dcgan/NetG-epoch-12-step-2552.pth'))
+
 net_d = Net_D(ndf, nc, l)
 net_d.cuda()
+net_d.load_state_dict(torch.load('/home/zeng/data/models/dcgan/NetD-epoch-12-step-2552.pth'))
 
 dataset = dset.ImageFolder(root=data_root,
                                transform=transforms.Compose([
@@ -65,7 +68,7 @@ fixed_noise = Variable(fixed_noise)
 optimizerD = optim.Adam(net_d.parameters(), lr=0.0002, betas=(0.5, 0.999))
 optimizerG = optim.Adam(net_g.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
-for epoch in range(25):
+for epoch in range(13, 25):
     for i, (data, _) in enumerate(loader, 0):
         ############################
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
@@ -102,14 +105,14 @@ for epoch in range(25):
         net_g.zero_grad()
         err_g.backward()
         optimizerG.step()
-
-        ##########################
-        # Visualization
-        ##########################
-        images = make_grid((input_fake.data[:8]+1)/2)
-        writer.add_image('images', images, i)
-        writer.add_scalar('error D', err_d.data[0], i)
-        writer.add_scalar('error G', err_g.data[0], i)
+        if i%1000 == 0:
+            ##########################
+            # Visualization
+            ##########################
+            images = make_grid((input_fake.data[:8]+1)/2)
+            writer.add_image('images', images, i)
+            writer.add_scalar('error D', err_d.data[0], i)
+            writer.add_scalar('error G', err_g.data[0], i)
 
         print 'epoch %d step %d, err_d=%.4f, err_g=%.4f' %(epoch, i, err_d.data[0], err_g.data[0])
     torch.save(net_g.state_dict(), '%s/NetG-epoch-%d-step-%d.pth'%(check_root, epoch, i))

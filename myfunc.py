@@ -1,5 +1,8 @@
 import torch
 from torch.nn import functional as F
+from torchvision.utils import make_grid
+import pdb
+
 
 def loss_function(recon_x, x, mu, logvar, bsize, img_size):
     BCE = F.binary_cross_entropy(recon_x.view(bsize, -1), x.view(bsize, -1))
@@ -13,3 +16,16 @@ def loss_function(recon_x, x, mu, logvar, bsize, img_size):
     KLD /= bsize * img_size**2
 
     return BCE + KLD
+
+
+def make_image_grid(img, mean, std):
+    img = make_grid(img)
+    for i in range(3):
+        img[i] *= std[i]
+        img[i] += mean[i]
+    return img
+
+
+def make_label_grid(label):
+    label = make_grid(label.expand(-1, 3, -1, -1))
+    return label

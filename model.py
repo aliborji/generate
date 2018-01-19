@@ -2,17 +2,6 @@ import torch.nn as nn
 import pdb
 
 
-
-# custom weights initialization called on netG and netD
-def weights_init(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        m.weight.data.normal_(0.0, 0.02)
-    elif classname.find('BatchNorm') != -1:
-        m.weight.data.normal_(1.0, 0.02)
-        m.bias.data.fill_(0)
-
-
 class Net_G(nn.Module):
     def __init__(self, nz, ngf, nc, l):
         super(Net_G, self).__init__()
@@ -39,6 +28,12 @@ class Net_G(nn.Module):
             )
         )
         self.layers = nn.ModuleList(_layers)
+        # for m in self.modules():
+        #     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+        #         m.weight.data.normal_(0.0, 0.02)
+        #     elif isinstance(m, nn.BatchNorm2d):
+        #         m.weight.data.normal_(1.0, 0.02)
+        #         m.bias.data.fill_(0)
 
     def forward(self, input):
         for l in self.layers:
@@ -71,6 +66,12 @@ class Net_D(nn.Module):
             )
         )
         self.layers = nn.ModuleList(_layers)
+        # for m in self.modules():
+        #     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+        #         m.weight.data.normal_(0.0, 0.02)
+        #     elif isinstance(m, nn.BatchNorm2d):
+        #         m.weight.data.normal_(1.0, 0.02)
+        #         m.bias.data.fill_(0)
 
     def forward(self, input):
         for l in self.layers:
@@ -100,6 +101,12 @@ class Encoder(nn.Module):
         self.fc21 = nn.Linear(16 * ndf * 2**(l-2), nz)
         self.fc22 = nn.Linear(16 * ndf * 2**(l-2), nz)
         self.layers = nn.ModuleList(_layers)
+        # for m in self.modules():
+        #     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+        #         m.weight.data.normal_(0.0, 0.02)
+        #     elif isinstance(m, nn.BatchNorm2d):
+        #         m.weight.data.normal_(1.0, 0.02)
+        #         m.bias.data.fill_(0)
 
     def forward(self, input):
         for l in self.layers:
@@ -135,6 +142,12 @@ class Decoder(nn.Module):
             )
         )
         self.layers = nn.ModuleList(_layers)
+        # for m in self.modules():
+        #     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+        #         m.weight.data.normal_(0.0, 0.02)
+        #     elif isinstance(m, nn.BatchNorm2d):
+        #         m.weight.data.normal_(1.0, 0.02)
+        #         m.bias.data.fill_(0)
 
     def forward(self, input):
         for l in self.layers:
