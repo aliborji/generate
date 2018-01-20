@@ -42,17 +42,22 @@ loader = torch.utils.data.DataLoader(dataset, batch_size=bsize,
 
 pcnn = PixelCNN()
 pcnn.cuda()
-criterion = nn.BCEWithLogitsLoss()
+criterion = nn.NLLLoss2d()
 
 optimizer = optim.Adam(pcnn.parameters(), lr=0.0002, betas=(0.5, 0.999))
 # train
-for epoch in range(10):
+for epoch in range(100):
     for i, (data, _) in enumerate(loader, 0):
-        bsize_now = data.size(0)
-        data = data.cuda()
-        input = Variable(data)
+        bsize_now, _, h, w = data.size()
+
+        ids = torch.LongTensor(data.size()).fill_(0)
+        ids[data>=0.5] = 1
+        label = torch.FloatTensor(bsize_now, 2, h, w).scatter_(1, ids, torch.ones(ids.size())).cuda()
+
+        input = Variable(data).cuda()
         output = pcnn(input)
-        loss = criterion(output, Variable(data))
+
+        loss = criterion(F.log_softmax(output), Variable(ids[:, 0]).cuda())
         pcnn.zero_grad()
         loss.backward()
         optimizer.step()
@@ -60,30 +65,27 @@ for epoch in range(10):
             # ##########################
             # # Visualization
             # ##########################
-            images = make_label_grid(F.sigmoid(output).data[:8])
+
+            _, temp = torch.max(output, 1)
+            images = make_label_grid(temp.data.float().unsqueeze(1)[:8])
             writer.add_image('output', images, i)
             images = make_label_grid(data[:8])
             writer.add_image('images', images, i)
             writer.add_scalar('error', loss.data[0], i)
             print 'epoch %d step %d, err_d=%.4f' %(epoch, i, loss.data[0])
 
-# test
-it = 0
-for i, (data, _) in enumerate(loader, 0):
     output = data.cuda()
     output[:, :, 14:, :] = 0
-    # output = torch.zeros(bsize, 1, 28, 28).cuda()
-    print it
-    it += 1
-    for i in range(14, 28):
-        for j in range(28):
+    for j in range(14, 28):
+        for k in range(28):
             temp = pcnn(Variable(output, volatile=True))
-            output[:, :, i, j] = F.sigmoid(temp).data[:, :, i, j]
+            _, temp = torch.max(temp, 1)
+            output[:, :, j, k] = temp.data.float().unsqueeze(1)[:,:, j, k]
     # ##########################
     # # Visualization
     # ##########################
     images = make_label_grid(output[:8])
-    writer.add_image('output', images, i)
+    writer.add_image('validation', images, i)
 
                         # torch.save(decoder.state_dict(), '%s/decoder-epoch-%d-step-%d.pth'%(check_root, epoch, i))
     # torch.save(encoder.state_dict(), '%s/encoder-epoch-%d-step-%d.pth'%(check_root, epoch, i))
