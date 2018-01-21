@@ -16,6 +16,7 @@ import gc
 import matplotlib.pyplot as plt
 
 bsize = 64
+img_size = 32
 data_root = '/home/zeng/data/datasets/nature_obj'
 check_root = '/home/zeng/data/models/pixelCNN'
 
@@ -25,17 +26,17 @@ writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
 if not os.path.exists(check_root):
     os.mkdir(check_root)
 
-# dataset = dset.ImageFolder(root=data_root,
-#                                transform=transforms.Compose([
-#                                    transforms.Resize(img_size),
-#                                    transforms.CenterCrop(img_size),
-#                                    transforms.ToTensor()
-#                                ]))
+dataset = dset.ImageFolder(root=data_root,
+                               transform=transforms.Compose([
+                                   transforms.Resize(img_size),
+                                   transforms.CenterCrop(img_size),
+                                   transforms.ToTensor()
+                               ]))
 
-dataset = dset.MNIST('../data', train=True, download=True,
-                   transform=transforms.Compose([
-                       transforms.ToTensor()
-                   ]))
+# dataset = dset.MNIST('../data', train=True, download=True,
+#                    transform=transforms.Compose([
+#                        transforms.ToTensor()
+#                    ]))
 
 loader = torch.utils.data.DataLoader(dataset, batch_size=bsize,
                                          shuffle=True, num_workers=4)
@@ -48,11 +49,12 @@ optimizer = optim.Adam(pcnn.parameters(), lr=0.0002, betas=(0.5, 0.999))
 # train
 for epoch in range(100):
     for i, (data, _) in enumerate(loader, 0):
+        data = data.mean(1, keepdim=True)
         bsize_now, _, h, w = data.size()
 
-        ids = torch.LongTensor(data.size()).fill_(0)
-        ids[data>=0.5] = 1
-        label = torch.FloatTensor(bsize_now, 2, h, w).scatter_(1, ids, torch.ones(ids.size())).cuda()
+        ids = (255*data).long()
+
+        label = torch.FloatTensor(bsize_now, 256, h, w).scatter_(1, ids, torch.ones(ids.size())).cuda()
 
         input = Variable(data).cuda()
         output = pcnn(input)
@@ -67,25 +69,25 @@ for epoch in range(100):
             # ##########################
 
             _, temp = torch.max(output, 1)
-            images = make_label_grid(temp.data.float().unsqueeze(1)[:8])
+            images = make_label_grid(temp.data.float().unsqueeze(1)[:8]/255)
             writer.add_image('output', images, i)
             images = make_label_grid(data[:8])
             writer.add_image('images', images, i)
             writer.add_scalar('error', loss.data[0], i)
             print 'epoch %d step %d, err_d=%.4f' %(epoch, i, loss.data[0])
-
-    output = data.cuda()
-    output[:, :, 14:, :] = 0
-    for j in range(14, 28):
-        for k in range(28):
-            temp = pcnn(Variable(output, volatile=True))
-            _, temp = torch.max(temp, 1)
-            output[:, :, j, k] = temp.data.float().unsqueeze(1)[:,:, j, k]
-    # ##########################
-    # # Visualization
-    # ##########################
-    images = make_label_grid(output[:8])
-    writer.add_image('validation', images, i)
+        if i % 1000==0:
+            output = data.cuda()
+            output[:, :, 14:, :] = 0
+            for j in range(14, 32):
+                for k in range(32):
+                    temp = pcnn(Variable(output, volatile=True))
+                    _, temp = torch.max(temp, 1)
+                    output[:, :, j, k] = temp.data.float().unsqueeze(1)[:,:, j, k]/255
+            # ##########################
+            # # Visualization
+            # ##########################
+            images = make_label_grid(output[:8])
+            writer.add_image('validation', images, i)
 
                         # torch.save(decoder.state_dict(), '%s/decoder-epoch-%d-step-%d.pth'%(check_root, epoch, i))
     # torch.save(encoder.state_dict(), '%s/encoder-epoch-%d-step-%d.pth'%(check_root, epoch, i))

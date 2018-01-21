@@ -62,19 +62,19 @@ class MaskedConv2d(nn.Conv2d):
 #         return super(MaskedConv2d, self).forward(x)
 
 n_hidden = 128
-d_hidden = 32
+d_hidden = 1024
 ksize = 3
 class ResBlock(nn.Module):
     def __init__(self):
         super(ResBlock, self).__init__()
         self.main = nn.Sequential(
-            nn.Conv2d(2*n_hidden, n_hidden, kernel_size=1),
+            MaskedConv2d('B', 2*n_hidden, n_hidden, kernel_size=3, padding=1),
             nn.BatchNorm2d(n_hidden),
             nn.ReLU(),
             MaskedConv2d('B', n_hidden, n_hidden, kernel_size=ksize, stride=1, padding=ksize//2),
             nn.BatchNorm2d(n_hidden),
             nn.ReLU(),
-            nn.Conv2d(n_hidden, 2*n_hidden, kernel_size=1),
+            MaskedConv2d('B', n_hidden, 2*n_hidden, kernel_size=3, padding=1),
             nn.BatchNorm2d(2*n_hidden),
             nn.ReLU()
         )
@@ -102,10 +102,10 @@ class PixelCNN(nn.Module):
             ResBlock(),
             ResBlock(),
             ResBlock(),
-            nn.Conv2d(2*n_hidden, d_hidden, kernel_size=1),
+            MaskedConv2d('B', 2*n_hidden, d_hidden, kernel_size=3, padding=1),
             nn.BatchNorm2d(d_hidden),
             nn.ReLU(),
-            nn.Conv2d(d_hidden, 2, kernel_size=1)
+            MaskedConv2d('B', d_hidden, 256, kernel_size=3, padding=1)
             # ResBlock(),
             # nn.ReLU(),
             # nn.Conv2d(2*n_hidden, d_hidden, kernel_size=1),
