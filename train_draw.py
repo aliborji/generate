@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from draw import draw
+from draw_attn import draw, loss_function
 import pdb
 from torch.autograd.variable import Variable
 import torch.utils.data
@@ -12,11 +12,10 @@ from tensorboard import SummaryWriter
 from datetime import datetime
 from torchvision.utils import make_grid
 from torch.nn import functional as F
-from draw import loss_function
 
 
-data_root = '/home/crow/data/datasets/nature_obj'
-check_root = '/home/crow/data/models/draw'
+data_root = '/home/zeng/data/datasets/nature_obj'
+check_root = '/home/zeng/data/models/draw'
 
 os.system('rm -rf ./runs/*')
 writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
