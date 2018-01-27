@@ -41,7 +41,7 @@ class draw(nn.Module):
         # hidden_logvar->logvar
         self.logvar_fc = nn.Linear(enc_hidden_size, nz)
 
-        self.dec_rnn = nn.GRUCell(nz, dec_hidden_size)
+        self.dec_rnn = nn.LSTMCell(nz, dec_hidden_size)
         self.hdec_to_attparam = nn.Linear(dec_hidden_size, 5)
         self.hdec_to_write = nn.Linear(dec_hidden_size, patch_size*3)
 
@@ -174,15 +174,15 @@ class draw(nn.Module):
 
         return mu, h_mu, logvar, h_logvar
 
-    def decoder_network(self, z, h_dec_prev, c):
-        h_dec = self.dec_rnn(z, h_dec_prev)
+    def decoder_network(self, z, c_dec_prev, h_dec_prev, c):
+        h_dec, c_dec = self.dec_rnn(z, (h_dec_prev, c_dec_prev))
         sb = self.write(h_dec)
         sb = sb.view(-1, 3, img_size, img_size)
         c = c + sb
         # print("decoder done")
         # print("------------")
 
-        return c, h_dec
+        return c, h_dec, c_dec
 
     def forward(self, x, T):
         # advance by T timesteps
@@ -190,10 +190,9 @@ class draw(nn.Module):
         c = Variable(torch.zeros(bsize, 3, img_size, img_size)).cuda()
         h_mu = Variable(torch.zeros(bsize, enc_hidden_size)).cuda()
         h_logvar = Variable(torch.zeros(bsize, enc_hidden_size)).cuda()
-        mu = Variable(torch.zeros(bsize, nz)).cuda()
-        logvar = Variable(torch.zeros(bsize, nz)).cuda()
         h_dec = Variable(torch.zeros(bsize, dec_hidden_size)).cuda()
         noise = torch.FloatTensor(bsize, nz).cuda()
+        c_dec = Variable(torch.zeros(bsize, dec_hidden_size)).cuda()
 
         mu_t = []
         logvar_t = []
@@ -209,7 +208,7 @@ class draw(nn.Module):
             ## reparamize
             std = logvar.mul(0.5).exp_()
             noise.normal_(0, 1)
-            c, h_dec = self.decoder_network(Variable(noise).mul(std).add_(mu), h_dec, c)
+            c, h_dec, c_dec = self.decoder_network(Variable(noise).mul(std).add_(mu), c_dec, h_dec, c)
             mu_t.append(mu)
             logvar_t.append(logvar)
         # print("FORWARD PASS DONE")

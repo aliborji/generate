@@ -54,7 +54,7 @@ for epoch in range(25):
         input = Variable(data).cuda()
         recon_batch, mu_t, logvar_t = model(input, seq_len)
         # loss = Variable(torch.FloatTensor(1).fill_(0).cuda())
-        cuda.synchronize()  # 不加这个的话会在bceloss处报同步错误
+        cuda.synchronize()  # elsewise synchronize error
         loss = loss_function(recon_batch, input, mu_t, logvar_t, seq_len, input.size(0), img_size)
         model.zero_grad()
         loss.backward()
