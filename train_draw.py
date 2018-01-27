@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch import cuda
 import torch.optim as optim
 from draw_attn import draw, loss_function
 import pdb
@@ -25,18 +26,19 @@ if not os.path.exists(check_root):
 
 batch_size = 8
 seq_len = 20
+img_size = 32
+img_size = 32
 
-# dataset = dset.ImageFolder(root=data_root,
-#                                transform=transforms.Compose([
-#                                    transforms.Resize(img_size),
-#                                    transforms.CenterCrop(img_size),
-#                                    transforms.ToTensor()
-#                                ]))
-dataset = dset.MNIST('../data', train=True, download=True,
-                   transform=transforms.Compose([
-                       transforms.ToTensor()
-                   ]))
-
+dataset = dset.ImageFolder(root=data_root,
+                               transform=transforms.Compose([
+                                   transforms.Resize(img_size),
+                                   transforms.CenterCrop(img_size),
+                                   transforms.ToTensor()
+                               ]))
+# dataset = dset.MNIST('../data', train=True, download=True,
+#                    transform=transforms.Compose([
+#                        transforms.ToTensor()
+#                    ]))
 loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
                                          shuffle=True, num_workers=4)
 
@@ -51,8 +53,9 @@ for epoch in range(25):
     for i, (data, _) in enumerate(loader, 0):
         input = Variable(data).cuda()
         recon_batch, mu_t, logvar_t = model(input, seq_len)
-        recon_batch = recon_batch.view((-1, 28, 28))
-        loss = loss_function(recon_batch, input, mu_t, logvar_t, seq_len, input.size(0), 28)
+        # loss = Variable(torch.FloatTensor(1).fill_(0).cuda())
+        cuda.synchronize()  # 不加这个的话会在bceloss处报同步错误
+        loss = loss_function(recon_batch, input, mu_t, logvar_t, seq_len, input.size(0), img_size)
         model.zero_grad()
         loss.backward()
         optimizer.step()
@@ -60,7 +63,7 @@ for epoch in range(25):
             ##########################
             # Visualization
             ##########################
-            images = make_grid(recon_batch.data.unsqueeze(1)[:8])
+            images = make_grid(recon_batch.data[:8])
             writer.add_image('output', images, i)
             images = make_grid(data[:8])
             writer.add_image('images', images, i)

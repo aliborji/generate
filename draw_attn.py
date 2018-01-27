@@ -4,8 +4,8 @@ import torch
 from torch.nn import functional as F
 import pdb
 
-img_size = 28
-N = 12
+img_size = 32
+N = 16
 A = img_size
 B = img_size
 input_size = img_size ** 2
@@ -18,7 +18,6 @@ nz = 100
 def loss_function(recon_x, x, mu, logvar, T, bsize, img_size):
     # after T timesteps, we compare reconstruction with original
     BCE = F.binary_cross_entropy(recon_x.view(bsize, -1), x.view(bsize, -1))
-
     KLD = 0.0
 
     for seq in range(T):
@@ -34,9 +33,9 @@ class draw(nn.Module):
     def __init__(self, seq_len):
         super(draw, self).__init__()
         # writer -> encoder_mu
-        self.enc_mu = nn.GRUCell(2 * patch_size + dec_hidden_size, enc_hidden_size)
+        self.enc_mu = nn.GRUCell(2 * patch_size *3 + dec_hidden_size, enc_hidden_size)
         # writer -> encoder_logsigma
-        self.enc_logvar = nn.GRUCell(2 * patch_size + dec_hidden_size, enc_hidden_size)
+        self.enc_logvar = nn.GRUCell(2 * patch_size *3 + dec_hidden_size, enc_hidden_size)
         # hidden_mu->mu
         self.mu_fc = nn.Linear(enc_hidden_size, nz)
         # hidden_logvar->logvar
@@ -44,7 +43,7 @@ class draw(nn.Module):
 
         self.dec_rnn = nn.GRUCell(nz, dec_hidden_size)
         self.hdec_to_attparam = nn.Linear(dec_hidden_size, 5)
-        self.hdec_to_write = nn.Linear(dec_hidden_size, patch_size)
+        self.hdec_to_write = nn.Linear(dec_hidden_size, patch_size*3)
 
     def compute_filterbank_matrices(self, g_x, g_y, delta, var, N, A, B, batch_size):
         i = torch.arange(0, N).cuda()
@@ -125,27 +124,42 @@ class draw(nn.Module):
 
         F_x_t = F_x.permute(0, 2, 1)
 
-        tmp_x = F_y.bmm(x[:, 0].bmm(F_x_t))
-        tmp_x = gamma.expand_as(tmp_x) * tmp_x
-        tmp_x_hat = F_y.bmm(x_hat[:, 0].bmm(F_x_t))
-        tmp_x_hat = gamma.expand_as(tmp_x_hat) * tmp_x_hat
+        tmp_x_r = F_y.bmm(x[:, 0].bmm(F_x_t))
+        tmp_x_r = gamma.expand_as(tmp_x_r) * tmp_x_r
+        tmp_x_g = F_y.bmm(x[:, 1].bmm(F_x_t))
+        tmp_x_g = gamma.expand_as(tmp_x_g) * tmp_x_g
+        tmp_x_b = F_y.bmm(x[:, 2].bmm(F_x_t))
+        tmp_x_b = gamma.expand_as(tmp_x_b) * tmp_x_b
+
+        tmp_x_hat_r = F_y.bmm(x_hat[:, 0].bmm(F_x_t))
+        tmp_x_hat_r = gamma.expand_as(tmp_x_hat_r) * tmp_x_hat_r
+        tmp_x_hat_g = F_y.bmm(x_hat[:, 1].bmm(F_x_t))
+        tmp_x_hat_g = gamma.expand_as(tmp_x_hat_g) * tmp_x_hat_g
+        tmp_x_hat_b = F_y.bmm(x_hat[:, 2].bmm(F_x_t))
+        tmp_x_hat_b = gamma.expand_as(tmp_x_hat_b) * tmp_x_hat_b
         # this should have size 2*NxN == 2*patch_size
-        return torch.stack((tmp_x, tmp_x_hat), 1)
+        return torch.stack((tmp_x_r, tmp_x_g, tmp_x_b, tmp_x_hat_r, tmp_x_hat_g, tmp_x_hat_b), 1)
 
     def write(self, h_dec):
         F_x, F_y, gamma = self.get_attn_params(h_dec)
 
         w = self.hdec_to_write(h_dec)
-        w = w.view(-1, N, N)
+        w = w.view(-1, 3, N, N)
 
         F_y_t = F_y.permute(0, 2, 1)
-        tmp = F_y_t.bmm(w.bmm(F_x))
+        tmp_r = F_y_t.bmm(w[:, 0].bmm(F_x))
+        tmp_g = F_y_t.bmm(w[:, 1].bmm(F_x))
+        tmp_b = F_y_t.bmm(w[:, 2].bmm(F_x))
+        tmp = torch.stack((tmp_r, tmp_g, tmp_b), 1)
 
         epsilon = 0.0001 * Variable(torch.ones(gamma.size()).cuda())
         g = (gamma + epsilon)
         g = torch.unsqueeze(g, 1)
         g = torch.unsqueeze(g, 2)
-        return 1.0 / g * tmp
+        g = torch.unsqueeze(g, 3)
+
+        tmp = (1.0/g).expand_as(tmp)*tmp
+        return tmp
 
     def encoder_RNN(self, rd, h_mu_prev, h_logvar_prev, h_dec_prev):
         enc_input = torch.cat((rd, h_dec_prev), 1)  # skip connection from decoder
@@ -163,7 +177,7 @@ class draw(nn.Module):
     def decoder_network(self, z, h_dec_prev, c):
         h_dec = self.dec_rnn(z, h_dec_prev)
         sb = self.write(h_dec)
-        sb = sb.view(-1, 1, img_size, img_size)
+        sb = sb.view(-1, 3, img_size, img_size)
         c = c + sb
         # print("decoder done")
         # print("------------")
@@ -173,7 +187,7 @@ class draw(nn.Module):
     def forward(self, x, T):
         # advance by T timesteps
         bsize = x.size(0)
-        c = Variable(torch.zeros(bsize, 1, img_size, img_size)).cuda()
+        c = Variable(torch.zeros(bsize, 3, img_size, img_size)).cuda()
         h_mu = Variable(torch.zeros(bsize, enc_hidden_size)).cuda()
         h_logvar = Variable(torch.zeros(bsize, enc_hidden_size)).cuda()
         mu = Variable(torch.zeros(bsize, nz)).cuda()
