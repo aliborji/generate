@@ -24,10 +24,10 @@ writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
 if not os.path.exists(check_root):
     os.mkdir(check_root)
 
-batch_size = 8
+batch_size = 512
 seq_len = 20
-img_size = 32
-img_size = 32
+img_size = 64
+img_size = 64
 
 dataset = dset.ImageFolder(root=data_root,
                                transform=transforms.Compose([
@@ -45,11 +45,12 @@ loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
 
 model = draw(seq_len)
 model.cuda()
+model.load_state_dict(torch.load('/home/zeng/data/models/draw/draw-epoch-2-step-7977.pth'))
 # setup optimizer
 optimizer = optim.Adam(model.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
 # train
-for epoch in range(25):
+for epoch in range(3, 25):
     for i, (data, _) in enumerate(loader, 0):
         input = Variable(data).cuda()
         recon_batch, mu_t, logvar_t = model(input, seq_len)
@@ -59,7 +60,7 @@ for epoch in range(25):
         model.zero_grad()
         loss.backward()
         optimizer.step()
-        if i % 10 == 0:
+        if i % 100 == 0:
             ##########################
             # Visualization
             ##########################
@@ -67,7 +68,7 @@ for epoch in range(25):
             writer.add_image('output', images, i)
             images = make_grid(data[:8])
             writer.add_image('images', images, i)
-            writer.add_scalar('error', loss.data[0], i)
+        writer.add_scalar('error', loss.data[0], i)
 
         print 'epoch %d step %d, err_d=%.4f' %(epoch, i, loss.data[0])
     torch.save(model.state_dict(), '%s/draw-epoch-%d-step-%d.pth'%(check_root, epoch, i))

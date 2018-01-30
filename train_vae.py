@@ -15,30 +15,28 @@ from torchvision.utils import make_grid
 import gc
 
 
-data_root = '/home/zeng/data/datasets/nature_obj'
-check_root = '/home/zeng/data/models/vae'
+data_root = '/home/crow/data/datasets/nature_obj'
+check_root = '/home/crow/data/models/vae_64'
 
-os.system('rm -rf ./runs/*')
-writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
+os.system('rm -rf ./runs2/*')
+writer = SummaryWriter('./runs2/'+datetime.now().strftime('%B%d  %H:%M:%S'))
 
 if not os.path.exists(check_root):
     os.mkdir(check_root)
 
-img_size = 256
-bsize = 128
+img_size = 64
+bsize = 512
 nz = 100
 ngf = 64
 ndf = 64
 nc = 3
-l = 7
+l = 5
 
 decoder = Decoder(nz, ngf, nc, l)
 decoder.cuda()
-decoder.load_state_dict(torch.load('/home/zeng/data/models/vae/decoder-epoch-19-step-3988.pth'))
 
 encoder = Encoder(nz, ndf, nc, l)
 encoder.cuda()
-encoder.load_state_dict(torch.load('/home/zeng/data/models/vae/encoder-epoch-19-step-3988.pth'))
 
 
 dataset = dset.ImageFolder(root=data_root,
@@ -62,7 +60,7 @@ optimizer_en = optim.Adam(encoder.parameters(), lr=0.0002, betas=(0.5, 0.999))
 optimizer_de = optim.Adam(decoder.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
 # train
-for epoch in range(20, 25):
+for epoch in range(25):
     for i, (data, _) in enumerate(loader, 0):
         bsize_now = data.size(0)
         data = data.cuda()
@@ -81,17 +79,17 @@ for epoch in range(20, 25):
         loss.backward()
         optimizer_de.step()
         optimizer_en.step()
+        print 'epoch %d step %d, err_d=%.4f' % (epoch, i, loss.data[0])
 
-        if i % 1000 == 0:
-            # ##########################
-            # # Visualization
-            # ##########################
-            images = make_grid(output.data[:8])
-            writer.add_image('output', images, i)
-            images = make_grid(input[:8])
-            writer.add_image('images', images, i)
-            writer.add_scalar('error', loss.data[0], i)
-            print 'epoch %d step %d, err_d=%.4f' %(epoch, i, loss.data[0])
+        # if i % 100 == 0:
+        # ##########################
+        # # Visualization
+        # ##########################
+        images = make_grid(output.data[:8])
+        writer.add_image('output', images, i)
+        images = make_grid(input[:8])
+        writer.add_image('images', images, i)
+        writer.add_scalar('error', loss.data[0], i)
         del mu, logvar, std, output, loss
         gc.collect()
     torch.save(decoder.state_dict(), '%s/decoder-epoch-%d-step-%d.pth'%(check_root, epoch, i))

@@ -4,15 +4,15 @@ import torch
 from torch.nn import functional as F
 import pdb
 
-img_size = 32
-N = 16
+img_size = 64
+N = 32
 A = img_size
 B = img_size
 input_size = img_size ** 2
 patch_size = N ** 2
-enc_hidden_size = 100
-dec_hidden_size = 100
-nz = 100
+enc_hidden_size = 200
+dec_hidden_size = 400
+nz = 200
 
 
 def loss_function(recon_x, x, mu, logvar, T, bsize, img_size):
