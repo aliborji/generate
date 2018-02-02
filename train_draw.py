@@ -15,8 +15,8 @@ from torchvision.utils import make_grid
 from torch.nn import functional as F
 
 
-data_root = '/home/zeng/data/datasets/nature_obj'
-check_root = '/home/zeng/data/models/draw'
+data_root = '/home/zeng/data/datasets/cartoon'
+check_root = '/home/zeng/data/models/draw_cartoon'
 
 os.system('rm -rf ./runs/*')
 writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
@@ -24,9 +24,8 @@ writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
 if not os.path.exists(check_root):
     os.mkdir(check_root)
 
-batch_size = 512
+batch_size = 300
 seq_len = 20
-img_size = 64
 img_size = 64
 
 dataset = dset.ImageFolder(root=data_root,
@@ -45,12 +44,11 @@ loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
 
 model = draw(seq_len)
 model.cuda()
-model.load_state_dict(torch.load('/home/zeng/data/models/draw/draw-epoch-2-step-7977.pth'))
 # setup optimizer
 optimizer = optim.Adam(model.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
 # train
-for epoch in range(3, 25):
+for epoch in range(25):
     for i, (data, _) in enumerate(loader, 0):
         input = Variable(data).cuda()
         recon_batch, mu_t, logvar_t = model(input, seq_len)
