@@ -1,34 +1,32 @@
-# 生成模型和训练数据
-
-我要吐槽一下毕设的选题了
-
-为什么会选那么一个题？？？
-
-毁了辛苦攒四年的绩点就算了
-
-都毕业半年了还在被它缠绕
-
-我得有多闲得慌才会做下面这些事啊。费力不讨好。
+# 图片生成模型和训练数据
 
 ## 模型
+这个仓库里有我实现的pytorch版的VAE, DCGAN, WGAN, DRAW, PixelCNN
 
-VAE, DCGAN, WGAN, DRAW, PixelCNN
+其中VAE和WGAN也用了DCGAN的网络结构
 
-DCGAN和VAE能256
+DCGAN和VAE能产生256的图片
 
 WGAN只能128，大了训练不出来
 
-DRAW只能64。图大了会报GPU同步错误。原因未知
+DRAW用的全连接层和LSTM，只能产生64的图片。图大了会报GPU同步错误。原因未知
 
 PixelCNN只能不怎么合理地补全MNIST图片。生成的MNIST样本不合理。彩图训练不出来。
 
+试了作者版的PixelCNN，只有一个显卡训练起来十分慢，暂时放弃PixelCNN。下次需要它时再试试。
+
+参考：
+
+[pytorch example DCGAN](https://github.com/pytorch/examples/tree/master/dcgan)
+
+[Praveen关于DRAW的博文](https://pravn.wordpress.com/2017/09/11/rnncell-modules-in-pytorch-to-implement-draw/)和他的[DRAW生成手写数字](https://github.com/pravn/vae_draw)
+
+
 ## 数据
 
-照片：ImageNet里找了大约510530张
+照片：ImageNet里找了510530张
 
-卡通：动画片每秒钟截一张图，搜集大约50万张动画片截图。从各种盗版分享站上找的外国资源，从油管上找的中国资源，油管上搜cartoon出来一些不认识的。
-
-已有511460个
+卡通：为了防止重复的图片太多，动画片每秒钟只截一张图。总共从73个动画片中得到511460帧。毕竟下载这么多不容易，如果有人有兴趣可以找我要这些图片（虽然应该没有人有兴趣）
 
 猫和老鼠 12589
 
