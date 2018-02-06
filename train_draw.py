@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import cuda
 import torch.optim as optim
-from draw_attn import draw, loss_function
+from draw import draw, loss_function
 import pdb
 from torch.autograd.variable import Variable
 import torch.utils.data
@@ -15,16 +15,16 @@ from torchvision.utils import make_grid
 from torch.nn import functional as F
 
 
-data_root = '/home/zeng/data/datasets/cartoon'
-check_root = '/home/zeng/data/models/draw_cartoon'
+data_root = '/home/crow/data/datasets/nature_obj'
+check_root = '/home/crow/data/models/draw_noattn'
 
-os.system('rm -rf ./runs/*')
-writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
+os.system('rm -rf ./runs2/*')
+writer = SummaryWriter('./runs2/'+datetime.now().strftime('%B%d  %H:%M:%S'))
 
 if not os.path.exists(check_root):
     os.mkdir(check_root)
 
-batch_size = 300
+batch_size = 1024
 seq_len = 20
 img_size = 64
 
@@ -58,7 +58,7 @@ for epoch in range(25):
         model.zero_grad()
         loss.backward()
         optimizer.step()
-        if i % 100 == 0:
+        if i % 10 == 0:
             ##########################
             # Visualization
             ##########################

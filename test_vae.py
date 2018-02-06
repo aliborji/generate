@@ -16,7 +16,7 @@ from torchvision.utils import make_grid
 import gc
 import matplotlib.pyplot as plt
 
-check_root = '/home/zeng/data/generate/vae_64'
+check_root = './cartoon/vae'
 
 if not os.path.exists(check_root):
     os.mkdir(check_root)
@@ -31,14 +31,15 @@ l = 5
 
 decoder = Decoder(nz, ngf, nc, l)
 decoder.cuda()
-decoder.load_state_dict(torch.load('/home/zeng/data/models/vae_64/decoder-epoch-24-step-997.pth'))
+# decoder.load_state_dict(torch.load('/home/zeng/data/models/vae_64/decoder-epoch-24-step-997.pth'))
+decoder.load_state_dict(torch.load('/home/zeng/data/models/vae_cartoon_128/decoder-epoch-24-step-499.pth'))
 
 noise = torch.FloatTensor(bsize, nz, 1, 1)
 
 noise = noise.cuda()
 
 # train
-for epoch in range(20):
+for epoch in range(25):
     noise.normal_(0, 1)
     output = decoder((Variable(noise)))
     output = output.data.cpu().numpy()

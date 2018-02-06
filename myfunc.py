@@ -29,7 +29,8 @@ def color_grad_mag(img):
     m = np.array([[0.06, 0.63, 0.27], [0.3, 0.04, -0.35], [0.34, -0.6, 0.17]])
     m = m.transpose()
     temp = temp.dot(m)
-    temp = temp.reshape((128, 128, 3))
+    imgsize = 128
+    temp = temp.reshape((imgsize, imgsize, 3))
     sobelx0 = cv2.Sobel(temp[:, :, 0], cv2.CV_64F, 1, 0, ksize=5)
     sobely0 = cv2.Sobel(temp[:, :, 0], cv2.CV_64F, 0, 1, ksize=5)
     sobelx1 = cv2.Sobel(temp[:, :, 1], cv2.CV_64F, 1, 0, ksize=5)
@@ -303,6 +304,7 @@ def weibull_contrast_param(img_root, output_root, tag):
         if not imname.endswith('.png'):
             continue
         pass
+        print it
         # load iamge
         #print ('testing %d of %s ' % (it, tag))
         img = cv2.imread(img_root + '/' + imname[0:-4] + '.png')
@@ -398,7 +400,7 @@ def area_statistic(img_root, output_root, tag):
         np.savez(output_param2, param2s)
         np.savez(output_res, ress)
         output_name.close()
-    return bins
+    return bins, param1s, param2s
 
 
 def loss_function(recon_x, x, mu, logvar, bsize, img_size):

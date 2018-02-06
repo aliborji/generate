@@ -8,7 +8,7 @@ class Net_G(nn.Module):
         _layers = []
         _layers.append(
             nn.Sequential(
-                nn.ConvTranspose2d(nz, ngf * 2**(l-2), 4, 1, 0, bias=False),
+                nn.ConvTranspose2d(nz, ngf * 2**(l-2), 8, 1, 0, bias=False),
                 nn.BatchNorm2d(ngf * 2**(l-2)),
                 nn.ReLU(True)
             )
@@ -61,7 +61,7 @@ class Net_D(nn.Module):
             )
         _layers.append(
             nn.Sequential(
-                nn.Conv2d(ndf * 2**(l-2), 1, 4, 1, 0, bias=False),
+                nn.Conv2d(ndf * 2**(l-2), 1, 8, 1, 0, bias=False),
                 nn.Sigmoid()
             )
         )
@@ -93,7 +93,7 @@ class Encoder(nn.Module):
         for i in range(1, l-1):
             _layers.append(
                 nn.Sequential(
-                    nn.Conv2d(ndf * 2**(i-1), ndf * 2**i, 4, 2, 1, bias=False),
+                    nn.Conv2d(ndf * 2**(i-1), ndf * 2**i, 8, 2, 1, bias=False),
                     nn.BatchNorm2d(ndf * 2**i),
                     nn.LeakyReLU(0.2, inplace=True),
                 )
@@ -122,7 +122,7 @@ class Decoder(nn.Module):
         _layers = []
         _layers.append(
             nn.Sequential(
-                nn.ConvTranspose2d(nz, ngf * 2**(l-2), 4, 1, 0, bias=False),
+                nn.ConvTranspose2d(nz, ngf * 2**(l-2), 8, 1, 0, bias=False),
                 nn.BatchNorm2d(ngf * 2**(l-2)),
                 nn.ReLU(True)
             )

@@ -13,17 +13,17 @@ from datetime import datetime
 from torchvision.utils import make_grid
 
 
-data_root = '/home/crow/data/datasets/nature_obj'
-check_root = '/home/crow/data/models/wgan_64'
+data_root = '/home/crow/data/datasets/cartoon'
+check_root = '/home/crow/data/models/wgan_cartoon_128'
 
-os.system('rm -rf ./runs2/*')
-writer = SummaryWriter('./runs2/'+datetime.now().strftime('%B%d  %H:%M:%S'))
+os.system('rm -rf ./runs3/*')
+writer = SummaryWriter('./runs3/'+datetime.now().strftime('%B%d  %H:%M:%S'))
 
 if not os.path.exists(check_root):
     os.mkdir(check_root)
 
-img_size = 64
-bsize = 1024
+img_size = 128
+bsize = 300
 nz = 100
 ngf = 64
 ndf = 64
@@ -32,11 +32,9 @@ l = 5
 
 net_g = Net_G(nz, ngf, nc, l)
 net_g.cuda()
-net_g.load_state_dict(torch.load('/home/crow/data/models/wgan_64/NetG-epoch-24-step-499.pth'))
 
 net_d = Net_D(ndf, nc, l)
 net_d.cuda()
-net_d.load_state_dict(torch.load('/home/crow/data/models/wgan_64/NetD-epoch-24-step-499.pth'))
 
 dataset = dset.ImageFolder(root=data_root,
                                transform=transforms.Compose([
@@ -63,7 +61,7 @@ optimizerG = optim.Adam(net_g.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
 # train
 ig = 0
-for epoch in range(50, 75):
+for epoch in range(25):
     dataIter = iter(loader)
     ib = 0
     while ib < len(loader):
@@ -111,14 +109,14 @@ for epoch in range(50, 75):
         err_g.backward(one)
         optimizerG.step()
         ig += 1
-        # if ib % 100==0:
-        ##########################
-        # Visualization
-        ##########################
-        images = make_grid((input_fake.data[:8]+1)/2)
-        writer.add_image('images', images, ib)
-        writer.add_scalar('error D', err_d.data[0], ib)
-        writer.add_scalar('error G', err_g.data[0], ib)
+        if ib % 100==0:
+            ##########################
+            # Visualization
+            ##########################
+            images = make_grid((input_fake.data[:8]+1)/2)
+            writer.add_image('images', images, ib)
+            writer.add_scalar('error D', err_d.data[0], ib)
+            writer.add_scalar('error G', err_g.data[0], ib)
         print 'epoch %d step %d, err_d=%.4f, err_g=%.4f' %(epoch, ib, err_d.data[0], err_g.data[0])
     torch.save(net_g.state_dict(), '%s/NetG-epoch-%d-step-%d.pth'%(check_root, epoch, ib))
     torch.save(net_d.state_dict(), '%s/NetD-epoch-%d-step-%d.pth'%(check_root, epoch, ib))

@@ -15,17 +15,17 @@ from torchvision.utils import make_grid
 import gc
 
 
-data_root = '/home/crow/data/datasets/nature_obj'
-check_root = '/home/crow/data/models/vae_64'
+data_root = '/home/crow/data/datasets/cartoon'
+check_root = '/home/crow/data/models/vae_carton_128'
 
-os.system('rm -rf ./runs2/*')
-writer = SummaryWriter('./runs2/'+datetime.now().strftime('%B%d  %H:%M:%S'))
+os.system('rm -rf ./runs/*')
+writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
 
 if not os.path.exists(check_root):
     os.mkdir(check_root)
 
-img_size = 64
-bsize = 512
+img_size = 128
+bsize = 1024
 nz = 100
 ngf = 64
 ndf = 64
@@ -81,15 +81,15 @@ for epoch in range(25):
         optimizer_en.step()
         print 'epoch %d step %d, err_d=%.4f' % (epoch, i, loss.data[0])
 
-        # if i % 100 == 0:
-        # ##########################
-        # # Visualization
-        # ##########################
-        images = make_grid(output.data[:8])
-        writer.add_image('output', images, i)
-        images = make_grid(input[:8])
-        writer.add_image('images', images, i)
-        writer.add_scalar('error', loss.data[0], i)
+        if i % 100 == 0:
+            # ##########################
+            # # Visualization
+            # ##########################
+            images = make_grid(output.data[:8])
+            writer.add_image('output', images, i)
+            images = make_grid(input[:8])
+            writer.add_image('images', images, i)
+            writer.add_scalar('error', loss.data[0], i)
         del mu, logvar, std, output, loss
         gc.collect()
     torch.save(decoder.state_dict(), '%s/decoder-epoch-%d-step-%d.pth'%(check_root, epoch, i))

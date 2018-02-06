@@ -13,16 +13,16 @@ from datetime import datetime
 from torchvision.utils import make_grid
 
 
-data_root = '/home/crow/data/datasets/nature_obj'
-check_root = '/home/crow/data/models/dcgan_64'
+data_root = '/home/crow/data/datasets/cartoon'
+check_root = '/home/crow/data/models/dcgan_cartoon_128'
 
-os.system('rm -rf ./runs/*')
-writer = SummaryWriter('./runs/'+datetime.now().strftime('%B%d  %H:%M:%S'))
+os.system('rm -rf ./runs2/*')
+writer = SummaryWriter('./runs2/'+datetime.now().strftime('%B%d  %H:%M:%S'))
 
 if not os.path.exists(check_root):
     os.mkdir(check_root)
 
-img_size = 64
+img_size = 128
 bsize = 512
 nz = 100
 ngf = 64
@@ -103,14 +103,14 @@ for epoch in range(25):
         net_g.zero_grad()
         err_g.backward()
         optimizerG.step()
-        # if i%1000 == 0:
-        ##########################
-        # Visualization
-        ##########################
-        images = make_grid((input_fake.data[:8]+1)/2)
-        writer.add_image('images', images, i)
-        writer.add_scalar('error D', err_d.data[0], i)
-        writer.add_scalar('error G', err_g.data[0], i)
+        if i%100 == 0:
+            ##########################
+            # Visualization
+            ##########################
+            images = make_grid((input_fake.data[:8]+1)/2)
+            writer.add_image('images', images, i)
+            writer.add_scalar('error D', err_d.data[0], i)
+            writer.add_scalar('error G', err_g.data[0], i)
 
         print 'epoch %d step %d, err_d=%.4f, err_g=%.4f' %(epoch, i, err_d.data[0], err_g.data[0])
     torch.save(net_g.state_dict(), '%s/NetG-epoch-%d-step-%d.pth'%(check_root, epoch, i))

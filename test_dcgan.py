@@ -5,7 +5,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-check_root = '/home/zeng/data/generate/dcgan_64'
+check_root = './cartoon/dcgan'
 
 if not os.path.exists(check_root):
     os.mkdir(check_root)
@@ -20,14 +20,14 @@ l = 5
 
 net_g = Net_G(nz, ngf, nc, l)
 net_g.cuda()
-# net_g.load_state_dict(torch.load('/home/zeng/data/models/wgan_64/NetG-epoch-48-step-499.pth'))
-net_g.load_state_dict(torch.load('/home/zeng/data/models/dcgan_64/NetG-epoch-24-step-997.pth'))
+# net_g.load_state_dict(torch.load('/home/zeng/data/models/dcgan_64/NetG-epoch-24-step-997.pth'))
+net_g.load_state_dict(torch.load('/home/zeng/data/models/dcgan_cartoon_128/NetG-epoch-24-step-998.pth'))
 
 noise = torch.FloatTensor(bsize, nz, 1, 1)
 noise = noise.cuda()
 
 # train
-for epoch in range(10):
+for epoch in range(25):
     print epoch
     noise.normal_(0, 1)
     input_fake = net_g(Variable(noise))

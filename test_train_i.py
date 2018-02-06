@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 
 data_root = '/home/zeng/data/datasets/nature_obj'
-check_root = './imagenet/train'
+check_root = './imagenet/train2'
 
 if not os.path.exists(check_root):
     os.mkdir(check_root)
