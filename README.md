@@ -17,7 +17,7 @@ We collect 511,460 cartoon images extracted from 303 video files of 73 cartoon m
 
 To enhance diversity of the images, only one frame is extracted per second. 
 
-You can [email me](zengyu@mail.dlut.edu.cn) to ask for the cartoon images if interested.
+You can [email me](mailto:zengyu@mail.dlut.edu.cn) to ask for the cartoon images if interested.
 
 # 图片生成模型和训练数据
 
