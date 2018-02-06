@@ -22,8 +22,6 @@ You can [email me](zengyu@mail.dlut.edu.cn) to ask for the cartoon images if int
 # 图片生成模型和训练数据
 
 ## 模型
-这个仓库里有我实现的pytorch版的VAE, DCGAN, WGAN, DRAW, PixelCNN
-
 其中VAE和WGAN也用了DCGAN的网络结构
 
 DCGAN和VAE能产生256的图片
