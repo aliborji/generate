@@ -62,7 +62,6 @@ class Net_D(nn.Module):
         _layers.append(
             nn.Sequential(
                 nn.Conv2d(ndf * 2**(l-2), 1, 8, 1, 0, bias=False),
-                nn.Sigmoid()
             )
         )
         self.layers = nn.ModuleList(_layers)

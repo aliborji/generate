@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from model import Net_G, Net_D
 import pdb
@@ -76,6 +77,7 @@ for epoch in range(25):
         data = data.cuda()
         input.resize_as_(data).copy_(data)
         output = net_d(Variable(input))
+        output = F.sigmoid(output)
 
         label.resize_(bsize_now).fill_(1)
         err_d_real = criterion(output, Variable(label))
@@ -86,6 +88,7 @@ for epoch in range(25):
         noise.resize_(bsize_now, nz, 1, 1).normal_(0, 1)
         input_fake = net_g(Variable(noise))
         output = net_d(input_fake.detach())
+        output = F.sigmoid(output)
 
         label.fill_(0)
         err_d_fake = criterion(output, Variable(label))
@@ -97,6 +100,7 @@ for epoch in range(25):
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
         output = net_d(input_fake)
+        output = F.sigmoid(output)
         label.fill_(1)
 
         err_g = criterion(output, Variable(label))
