@@ -19,14 +19,13 @@ To enhance diversity of the images, only one frame is extracted per second.
 
 You can [email me](mailto:zengyu@mail.dlut.edu.cn) to ask for the cartoon images if interested.
 
-# 图片生成模型和训练数据
 
-## 模型
+## Unimportant things
+
+### 模型
 其中VAE和WGAN也用了DCGAN的网络结构
 
 DCGAN和VAE能产生256的图片
-
-WGAN只能128，大了训练不出来
 
 DRAW用的全连接层和LSTM，只能产生64的图片。图大了会报GPU同步错误。原因未知
 
@@ -39,7 +38,7 @@ DRAW用的全连接层和LSTM，只能产生64的图片。图大了会报GPU同�
 [Praveen关于DRAW的博文](https://pravn.wordpress.com/2017/09/11/rnncell-modules-in-pytorch-to-implement-draw/)和他的[DRAW生成手写数字](https://github.com/pravn/vae_draw)
 
 
-## 数据
+### 数据
 
 照片：ImageNet里找了510530张
 
@@ -73,13 +72,13 @@ DRAW用的全连接层和LSTM，只能产生64的图片。图大了会报GPU同�
 
 哪吒传奇 19850
 
-镇魂街 20576
+镇魂街 20576（好看，已入坑）
 
 大闹天宫 6840
 
 妖怪名单 12541
 
-蝙蝠侠：第一年、红帽子、黑暗骑士归来 17535
+蝙蝠侠：第一年、红帽子（好看）、黑暗骑士归来 17535
 
 腌黄瓜先生 2040
 
