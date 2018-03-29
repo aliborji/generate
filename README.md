@@ -1,5 +1,5 @@
 # Statistics of Deep Generated Images
-Code for the paper "Statistics of Deep Generated Images", which is under review as a journal paper.
+Code for the paper ["Statistics of Deep Generated Images"](https://arxiv.org/abs/1708.02688), which is under review as a journal paper.
 
 ## Usage
 All models are implemented in Python 2.7 with [Pytorch](https://github.com/pytorch/pytorch). 
